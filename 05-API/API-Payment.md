@@ -1,30 +1,41 @@
 ---
-title: Payment API (Sandbox)
+title: Payment API (Stripe)
 module: payment
 version: 1
 ---
 
 # Payment API
 
-Currently, the payment module operates internally within the checkout workflow and **does not expose a dedicated payment endpoint**.
+The payment module integrates with Stripe Checkout and exposes checkout/confirmation endpoints.
 
-## Trigger Point
+## Trigger Points
 
-* The payment sandbox is triggered by:
-
+* **Checkout Endpoint:**
   * `POST /api/v1/buyer/orders/checkout`
+  * Initiates the Stripe Checkout Session and returns `checkoutUrl`.
+
+* **Confirmation Endpoint:**
+  * `POST /api/v1/buyer/orders/checkout/confirm?sessionId={sessionId}`
+  * Verifies session payment status on Stripe and finalizes the order.
 
 ## Behavior
 
-1. After creating an order with `PENDING` status, the service invokes the sandbox payment process.
-2. The current sandbox implementation always returns `SUCCESS`.
-3. If the payment result is `FAILED`, the order is updated with `payment_status = FAILED` and the checkout process is terminated with an error.
-4. If the payment result is `SUCCESS`, the order is updated with `payment_status = SUCCESS` and `order_status = PAID`.
+1. **Checkout:**
+   * Validates cart, creates a `PENDING` order with payment method `STRIPE`.
+   * Maps cart items to Stripe Checkout line items.
+   * Invokes Stripe API to create a session and returns `checkoutUrl` to client.
+
+2. **Confirmation:**
+   * Client sends Stripe `sessionId` query parameter after redirection.
+   * Service retrieves session details from Stripe.
+   * Updates order status to `PAID` and payment status to `SUCCESS`.
+   * Saves purchased tracks to `purchased_library`.
+   * Clears the items from the user's cart.
 
 ## Notes
 
-* The MVP does not include a payment provider transaction ID.
-* When integrating a real payment gateway in the future, the checkout API contract should remain unchanged, while the implementation inside `PaymentService` can be extended.
+* Environment variable `STRIPE_API_KEY` must be configured on the backend environment.
+* Frontend success page `/checkout/success?session_id=...` handles calling the confirmation API.
 
 # Related
 

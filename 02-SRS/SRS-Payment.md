@@ -1,27 +1,28 @@
-# SRS — Payment Module (Sandbox)
+# SRS — Payment Module (Stripe)
 
 ## Purpose
 
-Defines the payment workflow within the MVP scope using a sandbox simulation (without integration with a real payment gateway).
+Defines the payment workflow integrated with Stripe Checkout gateway.
 
 ## Scope
 
-* **In Scope:** Simulated payment processing in the backend and storing payment status in orders.
-* **Out of Scope:** External payment gateways, webhook callbacks, refunds, and partial payments.
+* **In Scope:** Stripe Checkout Session creation, redirecting to Stripe payment page, verifying payment status via Session ID confirmation.
+* **Out of Scope:** Webhook callbacks, refunds, and partial payments.
 
 ## Functional Requirements
 
-1. The system invokes the payment sandbox during the checkout process.
-2. In the current sandbox implementation, payment results default to `SUCCESS`.
-3. If the payment fails, the system must update the order with `payment_status = FAILED` and the checkout process must fail.
-4. If the payment succeeds, the system must update the order with `payment_status = SUCCESS` and `order_status = PAID`.
-5. The payment method is fixed as `SANDBOX` for the MVP.
+1. The system creates a Stripe Checkout Session during the checkout process and returns the session URL.
+2. The user is redirected to Stripe to fill payment details.
+3. The frontend success page verifies the payment using the session ID.
+4. If the payment fails, the system updates the order with `payment_status = FAILED`.
+5. If the payment succeeds, the system updates the order with `payment_status = SUCCESS` and `order_status = PAID`, registers music to purchased library, and clears cart items.
+6. The payment method is configured as `STRIPE`.
 
 ## Data Requirements
 
-* `payment_method` uses the enum: `SANDBOX`
+* `payment_method` uses the enum: `SANDBOX`, `STRIPE`
 * `payment_status` uses the enum: `PENDING`, `SUCCESS`, `FAILED`
-* Detailed payment metadata (gateway transaction ID, raw payload, etc.) is not included in the MVP.
+* Detailed payment metadata includes `session_id` passed via redirect query param.
 
 ## Security & Compliance
 
