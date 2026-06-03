@@ -59,12 +59,14 @@ Out of scope:
 - Adding a non-published or soft-deleted music → `400 Bad Request`.
 - Buyer tries to add their own music → `400 Bad Request`.
 - Duplicate add → `409 Conflict` (service-level check + DB unique constraint).
+- Adding a music that has already been purchased by the buyer → `409 Conflict`.
 - Unauthorized access by non-buyers → `401/403` depending on auth state.
 
 # Acceptance Criteria
 
 - Buyer can add a published music to their cart: returns `200 OK` and persisted row.
 - Duplicate add returns `409 Conflict`.
+- Adding an already purchased music returns `409 Conflict`.
 - Removing an existing cart item succeeds with `200 OK`.
 - Listing returns `CartResponse` with correct `totalItems` and `totalPrice`.
 
